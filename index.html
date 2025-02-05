@@ -108,6 +108,7 @@
             <option value="orta">Orta</option>
             <option value="zor">Zor</option>
         </select>
+        <button onclick="speakWord()">Telaffuz Et</button>
         <button onclick="tahminEt()">Tahmin Et</button>
         <div class="result" id="sonuc"></div>
         <div class="timer" id="sure">10</div>
@@ -131,7 +132,14 @@
             <p>İyileşme: <span id="improvementOverTime">0%</span></p>
         </div>
     </div>
-
+<script>
+    function speakWord() {
+        const kelime = document.getElementById("kelime").textContent;
+        const utterance = new SpeechSynthesisUtterance(kelime);
+        utterance.lang = 'tr-TR'; // Türkçe telaffuz
+        speechSynthesis.speak(utterance);
+    }
+</script>
     <script>
         const romaKelimeleri = [
             { kelime: "Amor", anlam: "Aşk" },
