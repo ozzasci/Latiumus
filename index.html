@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roma Kelimeleri Flashcard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000; /* Changed to black */
+            margin: 0;
+            flex-direction: column;
+        }
+        .timer {
+            font-size: 1.5em;
+            margin-top: 10px;
+            color: blue; /* Changed to blue */
+        }
+        .flashcard {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            text-align: center;
+            width: 300px;
+        }
+        .flashcard h2 {
+            margin: 0 0 20px;
+        }
+        .flashcard input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .flashcard select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .flashcard button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .flashcard button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .score {
+            margin-top: 20px;
+        }
+        .score p {
+            margin: 5px 0;
+        }
+        .total-score {
+            font-size: 1.2em;
+            color: #007bff;
+        }
+        .incorrect-words {
+            margin-top: 20px;
+            color: red;
+        }
+        .progress-bar {
+            width: 100%;
+            background-color: #f3f3f3;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        .progress-bar-inner {
+            height: 20px;
+            width: 0;
+            background-color: #007bff;
+            text-align: center;
+            line-height: 20px;
+            color: white;
+        }
+        .statistics {
+            margin-top: 20px;
+            color: #fff;
+        }
+        .statistics p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="timer" id="genelSure">120</div>
+    <div class="flashcard">
+        <h2 id="kelime">Kelime</h2>
+        <input type="text" id="tahmin" placeholder="Kelimenin anlamını yazın">
+        <select id="zorlukSeviyesi">
+            <option value="kolay">Kolay</option>
+            <option value="orta">Orta</option>
+            <option value="zor">Zor</option>
+        </select>
+        <button onclick="tahminEt()">Tahmin Et</button>
+        <div class="result" id="sonuc"></div>
+        <div class="timer" id="sure">10</div>
+        <div class="score">
+            <p>Doğru: <span id="dogruSayisi">0</span></p>
+            <p>Yanlış: <span id="yanlisSayisi">0</span></p>
+        </div>
+        <div class="total-score">Puan: <span id="puan">0</span></div>
+        <div class="incorrect-words">
+            <h3>Yanlış Cevaplanan Kelimeler:</h3>
+            <ul id="yanlisKelimeListesi"></ul>
+        </div>
+        <audio id="ses" src="ses-dosyasi.mp3"></audio>
+        <div class="progress-bar">
+            <div class="progress-bar-inner" id="progressBar"></div>
+        </div>
+        <div class="statistics">
+            <h3>İstatistikler</h3>
+            <p>Doğruluk Oranı: <span id="accuracyRate">0%</span></p>
+            <p>Ortalama Yanıt Süresi: <span id="averageResponseTime">0 sn</span></p>
+            <p>İyileşme: <span id="improvementOverTime">0%</span></p>
+        </div>
+    </div>
+
+    <script>
+        const romaKelimeleri = [
+            { kelime: "Amor", anlam: "Aşk" },
+            { kelime: "Roma", anlam: "Roma" },
+            { kelime: "Via", anlam: "Yol" },
+            { kelime: "Aqua", anlam: "Su" },
+            { kelime: "Ignis", anlam: "Ateş" },
+            { kelime: "Terra", anlam: "Toprak" },
+            { kelime: "Caelum", anlam: "Gökyüzü" },
+            { kelime: "Luna", anlam: "Ay" },
+            { kelime: "Sol", anlam: "Güneş" },
+            { kelime: "Stella", anlam: "Yıldız" },
+            { kelime: "Vita", anlam: "Hayat" },
+            { kelime: "Mors", anlam: "Ölüm" },
+            { kelime: "Pax", anlam: "Barış" },
+            { kelime: "Bellum", anlam: "Savaş" },
+            { kelime: "Domus", anlam: "Ev" },
+            { kelime: "Familia", anlam: "Aile" },
+            { kelime: "Amicus", anlam: "Arkadaş" },
+            { kelime: "Hostis", anlam: "Düşman" },
+            { kelime: "Rex", anlam: "Kral" },
+            { kelime: "Regina", anlam: "Kraliçe" },
+            { kelime: "Senatus", anlam: "Senato" },
+            { kelime: "Populus", anlam: "Halk" },
+            { kelime: "Libertas", anlam: "Özgürlük" },
+            { kelime: "Justitia", anlam: "Adalet" },
+            { kelime: "Lex", anlam: "Kanun" },
+            { kelime: "Sacerdos", anlam: "Rahip" },
+            { kelime: "Templum", anlam: "Tapınak" },
+            { kelime: "Deus", anlam: "Tanrı" },
+            { kelime: "Dea", anlam: "Tanrıça" },
+            { kelime: "Fortuna", anlam: "Şans" },
+            { kelime: "Virtus", anlam: "Erdem" },
+            { kelime: "Honor", anlam: "Onur" },
+            { kelime: "Gloria", anlam: "Şan" },
+            { kelime: "Victoria", anlam: "Zafer" },
+            { kelime: "Defensor", anlam: "Savunucu" },
+            { kelime: "Imperium", anlam: "İmparatorluk" },
+            { kelime: "Provincia", anlam: "Eyalet" },
+            { kelime: "Civis", anlam: "Vatandaş" },
+            { kelime: "Miles", anlam: "Asker" },
+            { kelime: "Navis", anlam: "Gemi" },
+            { kelime: "Portus", anlam: "Liman" },
+            { kelime: "Mare", anlam: "Deniz" },
+            { kelime: "Mons", anlam: "Dağ" },
+            { kelime: "Silva", anlam: "Orman" },
+            { kelime: "Flumen", anlam: "Nehir" },
+            { kelime: "Urbs", anlam: "Şehir" },
+            { kelime: "Forum", anlam: "Meydan" },
+            { kelime: "Theatrum", anlam: "Tiyatro" },
+            { kelime: "Circus", anlam: "Sirk" }
+        ];
+
+        let mevcutKelime;
+        let puan = 0;
+        let dogruSayisi = 0;
+        let yanlisSayisi = 0;
+        let sure = 10;
+        let zamanlayici;
+        let yanlisKelimeler = [];
+        let toplamSure = 120;
+        let toplamKelime = romaKelimeleri.length;
+        let kelimeIndex = 0;
+        let testAktif = false;
+        let toplamYanıtSüresi = 0;
+        let toplamYanıtSayısı = 0;
+
+        function rastgeleKelimeSec() {
+            const rastgeleIndex = Math.floor(Math.random() * romaKelimeleri.length);
+            mevcutKelime = romaKelimeleri[rastgeleIndex];
+            document.getElementById("kelime").textContent = mevcutKelime.kelime;
+            document.getElementById("sonuc").textContent = "";
+            document.getElementById("tahmin").value = "";
+            const zorluk = document.getElementById("zorlukSeviyesi").value;
+            if (zorluk === "kolay") {
+                sure = 15;
+            } else if (zorluk === "orta") {
+                sure = 10;
+            } else if (zorluk === "zor") {
+                sure = 5;
+            }
+            document.getElementById("sure").textContent = sure;
+            clearInterval(zamanlayici);
+            zamanlayici = setInterval(zamanlayiciFonksiyonu, 1000);
+        }
+
+        function zamanlayiciFonksiyonu() {
+            if (!testAktif) return;
+            sure--;
+            document.getElementById("sure").textContent = sure;
+            if (sure === 0) {
+                clearInterval(zamanlayici);
+                document.getElementById("sonuc").textContent = `Süre doldu! Doğru cevap: ${mevcutKelime.anlam}`;
+                yanlisSayisi++;
+                document.getElementById("yanlisSayisi").textContent = yanlisSayisi;
+                kelimeIndex++;
+                updateProgressBar();
+                updateStatistics();
+                setTimeout(rastgeleKelimeSec, 2000);
+            }
+        }
+
+        function tahminEt() {
+            if (!testAktif) return;
+            const tahmin = document.getElementById("tahmin").value.trim();
+            const ses = document.getElementById("ses");
+            ses.play();
+            const yanıtSüresi = (document.getElementById("sure").innerText - sure);
+            toplamYanıtSüresi += yanıtSüresi;
+            toplamYanıtSayısı++;
+
+            if (tahmin.toLowerCase() === mevcutKelime.anlam.toLowerCase()) {
+                document.getElementById("sonuc").textContent = "Doğru! 🎉";
+                dogruSayisi++;
+                puan += 10;
+                document.getElementById("dogruSayisi").textContent = dogruSayisi;
+                document.getElementById("puan").textContent = puan;
+            } else {
+                document.getElementById("sonuc").textContent = `Yanlış! Doğru cevap: ${mevcutKelime.anlam}`;
+                yanlisSayisi++;
+                puan -= 5;
+                yanlisKelimeler.push(mevcutKelime.kelime);
+                document.getElementById("yanlisSayisi").textContent = yanlisSayisi;
+                document.getElementById("puan").textContent = puan;
+            }
+            clearInterval(zamanlayici);
+            kelimeIndex++;
+            updateProgressBar();
+            updateStatistics();
+            setTimeout(rastgeleKelimeSec, 2000);
+        }
+
+        function genelZamanlayici() {
+            if (!testAktif) return;
+            toplamSure--;
+            document.getElementById("genelSure").textContent = toplamSure;
+            if (toplamSure === 0) {
+                clearInterval(genelZamanlayici);
+                stopTest();
+            }
+        }
+
+        function startTest() {
+            testAktif = true;
+            kelimeIndex = 0;
+            updateProgressBar();
+            rastgeleKelimeSec();
+            setInterval(genelZamanlayici, 1000);
+        }
+
+        function stopTest() {
+            testAktif = false;
+            clearInterval(zamanlayici);
+            clearInterval(genelZamanlayici);
+            alert("Test sona erdi.");
+            document.getElementById("kelime").textContent = "Test Sona Erdi";
+            document.getElementById("tahmin").disabled = true;
+            document.getElementById("zorlukSeviyesi").disabled = true;
+            document.getElementById("sure").textContent = "0";
+            document.getElementById("sonuc").textContent = "";
+            document.getElementById("dogruSayisi").textContent = dogruSayisi;
+            document.getElementById("yanlisSayisi").textContent = yanlisSayisi;
+            const yanlisKelimeListesi = document.getElementById("yanlisKelimeListesi");
+            yanlisKelimeler.forEach(kelime => {
+                const li = document.createElement("li");
+                li.textContent = kelime;
+                yanlisKelimeListesi.appendChild(li);
+            });
+
+            if (dogruSayisi > 50) {
+                document.getElementById("sonuc").textContent = "Uzman!";
+            } else if (dogruSayisi < 30 && dogruSayisi >= 20) {
+                document.getElementById("sonuc").textContent = "İyisin!";
+            } else if (dogruSayisi < 20) {
+                document.getElementById("sonuc").textContent = "Daha çalışmalısın!";
+            }
+        }
+
+        function updateProgressBar() {
+            const progressBar = document.getElementById("progressBar");
+            const progress = (kelimeIndex / toplamKelime) * 100;
+            progressBar.style.width = progress + '%';
+            progressBar.textContent = Math.round(progress) + '%';
+        }
+
+        function updateStatistics() {
+            const accuracyRate = (dogruSayisi / (dogruSayisi + yanlisSayisi)) * 100;
+            const averageResponseTime = toplamYanıtSüresi / toplamYanıtSayısı;
+            document.getElementById("accuracyRate").textContent = accuracyRate.toFixed(2) + '%';
+            document.getElementById("averageResponseTime").textContent = averageResponseTime.toFixed(2) + ' sn';
+        }
+
+        startTest();
+    </script>
+</body>
+</html>
