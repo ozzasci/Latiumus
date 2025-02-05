@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -5,7 +6,97 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Roma Kelimeleri Flashcard</title>
     <style>
-        /* Stil kodları */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000; /* Changed to black */
+            margin: 0;
+            flex-direction: column;
+        }
+        .timer {
+            font-size: 1.5em;
+            margin-top: 10px;
+            color: blue; /* Changed to blue */
+        }
+        .flashcard {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            text-align: center;
+            width: 300px;
+        }
+        .flashcard h2 {
+            margin: 0 0 20px;
+        }
+        .flashcard input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .flashcard select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .flashcard button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .flashcard button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .score {
+            margin-top: 20px;
+        }
+        .score p {
+            margin: 5px 0;
+        }
+        .total-score {
+            font-size: 1.2em;
+            color: #007bff;
+        }
+        .incorrect-words {
+            margin-top: 20px;
+            color: red;
+        }
+        .progress-bar {
+            width: 100%;
+            background-color: #f3f3f3;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        .progress-bar-inner {
+            height: 20px;
+            width: 0;
+            background-color: #007bff;
+            text-align: center;
+            line-height: 20px;
+            color: white;
+        }
+        .statistics {
+            margin-top: 20px;
+            color: #fff;
+        }
+        .statistics p {
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
@@ -18,7 +109,6 @@
             <option value="orta">Orta</option>
             <option value="zor">Zor</option>
         </select>
-        <button onclick="speakWord()">Telaffuz Et</button>
         <button onclick="tahminEt()">Tahmin Et</button>
         <div class="result" id="sonuc"></div>
         <div class="timer" id="sure">10</div>
@@ -44,15 +134,57 @@
     </div>
 
     <script>
-        function speakWord() {
-            const kelime = document.getElementById("kelime").textContent;
-            const utterance = new SpeechSynthesisUtterance(kelime);
-            utterance.lang = 'tr-TR'; // Türkçe telaffuz
-            speechSynthesis.speak(utterance);
-        }
-    </script>
-    <script>
-        const romaKelimeleri = [ /* Kelime listesi */ ];
+        const romaKelimeleri = [
+            { kelime: "Amor", anlam: "Aşk" },
+            { kelime: "Roma", anlam: "Roma" },
+            { kelime: "Via", anlam: "Yol" },
+            { kelime: "Aqua", anlam: "Su" },
+            { kelime: "Ignis", anlam: "Ateş" },
+            { kelime: "Terra", anlam: "Toprak" },
+            { kelime: "Caelum", anlam: "Gökyüzü" },
+            { kelime: "Luna", anlam: "Ay" },
+            { kelime: "Sol", anlam: "Güneş" },
+            { kelime: "Stella", anlam: "Yıldız" },
+            { kelime: "Vita", anlam: "Hayat" },
+            { kelime: "Mors", anlam: "Ölüm" },
+            { kelime: "Pax", anlam: "Barış" },
+            { kelime: "Bellum", anlam: "Savaş" },
+            { kelime: "Domus", anlam: "Ev" },
+            { kelime: "Familia", anlam: "Aile" },
+            { kelime: "Amicus", anlam: "Arkadaş" },
+            { kelime: "Hostis", anlam: "Düşman" },
+            { kelime: "Rex", anlam: "Kral" },
+            { kelime: "Regina", anlam: "Kraliçe" },
+            { kelime: "Senatus", anlam: "Senato" },
+            { kelime: "Populus", anlam: "Halk" },
+            { kelime: "Libertas", anlam: "Özgürlük" },
+            { kelime: "Justitia", anlam: "Adalet" },
+            { kelime: "Lex", anlam: "Kanun" },
+            { kelime: "Sacerdos", anlam: "Rahip" },
+            { kelime: "Templum", anlam: "Tapınak" },
+            { kelime: "Deus", anlam: "Tanrı" },
+            { kelime: "Dea", anlam: "Tanrıça" },
+            { kelime: "Fortuna", anlam: "Şans" },
+            { kelime: "Virtus", anlam: "Erdem" },
+            { kelime: "Honor", anlam: "Onur" },
+            { kelime: "Gloria", anlam: "Şan" },
+            { kelime: "Victoria", anlam: "Zafer" },
+            { kelime: "Defensor", anlam: "Savunucu" },
+            { kelime: "Imperium", anlam: "İmparatorluk" },
+            { kelime: "Provincia", anlam: "Eyalet" },
+            { kelime: "Civis", anlam: "Vatandaş" },
+            { kelime: "Miles", anlam: "Asker" },
+            { kelime: "Navis", anlam: "Gemi" },
+            { kelime: "Portus", anlam: "Liman" },
+            { kelime: "Mare", anlam: "Deniz" },
+            { kelime: "Mons", anlam: "Dağ" },
+            { kelime: "Silva", anlam: "Orman" },
+            { kelime: "Flumen", anlam: "Nehir" },
+            { kelime: "Urbs", anlam: "Şehir" },
+            { kelime: "Forum", anlam: "Meydan" },
+            { kelime: "Theatrum", anlam: "Tiyatro" },
+            { kelime: "Circus", anlam: "Sirk" }
+        ];
 
         let mevcutKelime;
         let puan = 0;
