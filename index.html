@@ -31,14 +31,7 @@
         .flashcard h2 {
             margin: 0 0 20px;
         }
-        .flashcard input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        .flashcard select {
+        .flashcard input, .flashcard select {
             width: 100%;
             padding: 10px;
             margin-bottom: 20px;
@@ -52,6 +45,7 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            margin: 5px;
         }
         .flashcard button:hover {
             background-color: #0056b3;
@@ -96,13 +90,22 @@
         .statistics p {
             margin: 5px 0;
         }
+        .choices {
+            margin-top: 20px;
+        }
+        .choices button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="timer" id="genelSure">120</div>
     <div class="flashcard">
         <h2 id="kelime">Kelime</h2>
-        <input type="text" id="tahmin" placeholder="Kelimenin anlamını yazın">
+        <div class="choices" id="choices"></div>
+        <input type="text" id="tahmin" placeholder="Kelimenin anlamını yazın" style="display: none;">
         <select id="zorlukSeviyesi">
             <option value="kolay">Kolay</option>
             <option value="orta">Orta</option>
@@ -140,8 +143,53 @@
             utterance.lang = 'tr-TR'; // Türkçe telaffuz
             speechSynthesis.speak(utterance);
         }
-    </script>
-    <script>
+
+        function showChoices() {
+            const choicesContainer = document.getElementById("choices");
+            choicesContainer.innerHTML = '';
+            const shuffledChoices = shuffleArray([...romaKelimeleri]);
+            const correctChoice = { kelime: mevcutKelime.kelime, anlam: mevcutKelime.anlam };
+            shuffledChoices.splice(Math.floor(Math.random() * 4), 0, correctChoice);
+
+            shuffledChoices.slice(0, 4).forEach(choice => {
+                const button = document.createElement("button");
+                button.textContent = choice.anlam;
+                button.onclick = () => checkAnswer(choice.anlam);
+                choicesContainer.appendChild(button);
+            });
+        }
+
+        function checkAnswer(selectedAnlam) {
+            const correctAnlam = mevcutKelime.anlam;
+            if (selectedAnlam === correctAnlam) {
+                document.getElementById("sonuc").textContent = "Doğru! 🎉";
+                dogruSayisi++;
+                puan += 10;
+                document.getElementById("dogruSayisi").textContent = dogruSayisi;
+                document.getElementById("puan").textContent = puan;
+            } else {
+                document.getElementById("sonuc").textContent = `Yanlış! Doğru cevap: ${correctAnlam}`;
+                yanlisSayisi++;
+                puan -= 5;
+                yanlisKelimeler.push(mevcutKelime.kelime);
+                document.getElementById("yanlisSayisi").textContent = yanlisSayisi;
+                document.getElementById("puan").textContent = puan;
+            }
+            clearInterval(zamanlayici);
+            kelimeIndex++;
+            updateProgressBar();
+            updateStatistics();
+            setTimeout(rastgeleKelimeSec, 2000);
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
         const romaKelimeleri = [
             { kelime: "Amor", anlam: "Aşk" },
             { kelime: "Roma", anlam: "Roma" },
@@ -214,6 +262,7 @@
             document.getElementById("kelime").textContent = mevcutKelime.kelime;
             document.getElementById("sonuc").textContent = "";
             document.getElementById("tahmin").value = "";
+            showChoices();
             const zorluk = document.getElementById("zorlukSeviyesi").value;
             if (zorluk === "kolay") {
                 sure = 15;
