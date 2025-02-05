@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -68,6 +67,10 @@
         .incorrect-words {
             margin-top: 20px;
             color: red;
+            text-align: right;
+        }
+        .incorrect-words ul {
+            list-style-position: inside;
         }
         .progress-bar {
             width: 100%;
@@ -161,21 +164,24 @@
         }
 
         function checkAnswer(selectedAnlam) {
+            const flashcard = document.getElementById("flashcard");
             const correctAnlam = mevcutKelime.anlam;
             if (selectedAnlam === correctAnlam) {
                 document.getElementById("sonuc").textContent = "Doğru! 🎉";
+                flashcard.classList.add("correct");
+                setTimeout(() => flashcard.classList.remove("correct"), 600);
                 dogruSayisi++;
                 puan += 10;
-                document.getElementById("dogruSayisi").textContent = dogruSayisi;
-                document.getElementById("puan").textContent = puan;
             } else {
                 document.getElementById("sonuc").textContent = `Yanlış! Doğru cevap: ${correctAnlam}`;
+                flashcard.classList.add("incorrect");
+                setTimeout(() => flashcard.classList.remove("incorrect"), 600);
                 yanlisSayisi++;
                 puan -= 5;
                 yanlisKelimeler.push(mevcutKelime.kelime);
-                document.getElementById("yanlisSayisi").textContent = yanlisSayisi;
-                document.getElementById("puan").textContent = puan;
             }
+            document.getElementById("dogruSayisi").textContent = dogruSayisi;
+            document.getElementById("puan").textContent = puan;
             clearInterval(zamanlayici);
             kelimeIndex++;
             updateProgressBar();
