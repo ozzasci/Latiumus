@@ -146,20 +146,21 @@
         }
 
         function showChoices() {
-            const choicesContainer = document.getElementById("choices");
-            choicesContainer.innerHTML = '';
-            const shuffledChoices = shuffleArray([...romaKelimeleri]);
-            const correctChoice = { kelime: mevcutKelime.kelime, anlam: mevcutKelime.anlam };
-            shuffledChoices.splice(Math.floor(Math.random() * 4), 0, correctChoice);
+    const choicesContainer = document.getElementById("choices");
+    choicesContainer.innerHTML = '';
+    const shuffledChoices = shuffleArray([...romaKelimeleri]);
+    const correctChoice = { kelime: mevcutKelime.kelime, anlam: mevcutKelime.anlam };
+    shuffledChoices.splice(Math.floor(Math.random() * 4), 0, correctChoice);
 
-            shuffledChoices.slice(0, 4).forEach(choice => {
-                const button = document.createElement("button");
-                button.textContent = choice.anlam;
-                button.onclick = () => checkAnswer(choice.anlam);
-                choicesContainer.appendChild(button);
-            });
-        }
+    const displayedChoices = shuffledChoices.slice(0, 4);
 
+    displayedChoices.forEach(choice => {
+        const button = document.createElement("button");
+        button.textContent = choice.anlam;
+        button.onclick = () => checkAnswer(choice.anlam);
+        choicesContainer.appendChild(button);
+    });
+}
         function checkAnswer(selectedAnlam) {
             const correctAnlam = mevcutKelime.anlam;
             if (selectedAnlam === correctAnlam) {
