@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -114,6 +115,7 @@
         </select>
         <button onclick="speakWord()">Telaffuz Et</button>
         <button onclick="tahminEt()">Tahmin Et</button>
+<button onclick="printWords()">Kelimeleri Yazdır</button>
         <div class="result" id="sonuc"></div>
         <div class="timer" id="sure">10</div>
         <div class="score">
@@ -145,7 +147,7 @@
             speechSynthesis.speak(utterance);
         }
 
-        function showChoices() {
+       function showChoices() {
     const choicesContainer = document.getElementById("choices");
     choicesContainer.innerHTML = '';
     const shuffledChoices = shuffleArray([...romaKelimeleri]);
@@ -161,6 +163,7 @@
         choicesContainer.appendChild(button);
     });
 }
+
         function checkAnswer(selectedAnlam) {
             const correctAnlam = mevcutKelime.anlam;
             if (selectedAnlam === correctAnlam) {
@@ -386,5 +389,12 @@
 
         startTest();
     </script>
+<script>
+    function printWords() {
+        const wordList = romaKelimeleri.map(item => item.kelime).join(', ');
+        console.log(`Tüm Kelimeler: ${wordList}`);
+        alert(`Tüm Kelimeler: ${wordList}`);
+    }
+</script>
 </body>
 </html>
