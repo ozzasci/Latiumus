@@ -1935,6 +1935,11 @@ document.getElementById("contactButton").addEventListener("click", function() {
 
         startTest();
     </script>
+    <script>
+        document.getElementById("contactButton").addEventListener("click", function() {
+            window.location.href = "mailto:example@example.com?subject=İletişim Talebi&body=Merhaba, sizinle iletişime geçmek istiyorum.";
+        });
+    </script>
 <script>
     function printWords() {
         const wordList = romaKelimeleri.map(item => item.kelime).join(', ');
