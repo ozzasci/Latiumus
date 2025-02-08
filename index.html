@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -100,7 +99,6 @@
             width: 100%;
             margin-bottom: 10px;
         }
-         }
         #contactButton {
             padding: 10px 20px;
             background-color: #28a745;
@@ -128,7 +126,7 @@
         </select>
         <button onclick="speakWord()">Telaffuz Et</button>
         <button onclick="tahminEt()">Tahmin Et</button>
-<button onclick="printWords()">Kelimeleri Yazdır</button>
+        <button onclick="printWords()">Kelimeleri Yazdır</button>
         <button id="contactButton">İletişime Geçin</button>
         <div class="result" id="sonuc"></div>
         <div class="timer" id="sure">10</div>
@@ -154,31 +152,33 @@
     </div>
 
     <script>
-        
         function speakWord() {
             const kelime = document.getElementById("kelime").textContent;
             const utterance = new SpeechSynthesisUtterance(kelime);
             utterance.lang = 'tr-TR'; // Türkçe telaffuz
             speechSynthesis.speak(utterance);
         }
-document.getElementById("contactButton").addEventListener("click", function() {
+
+        document.getElementById("contactButton").addEventListener("click", function() {
             window.location.href = "mailto:example@example.com?subject=İletişim Talebi&body=Merhaba, sizinle iletişime geçmek istiyorum.";
-       function showChoices() {
-    const choicesContainer = document.getElementById("choices");
-    choicesContainer.innerHTML = '';
-    const shuffledChoices = shuffleArray([...romaKelimeleri]);
-    const correctChoice = { kelime: mevcutKelime.kelime, anlam: mevcutKelime.anlam };
-    shuffledChoices.splice(Math.floor(Math.random() * 4), 0, correctChoice);
+        });
 
-    const displayedChoices = shuffledChoices.slice(0, 4);
+        function showChoices() {
+            const choicesContainer = document.getElementById("choices");
+            choicesContainer.innerHTML = '';
+            const shuffledChoices = shuffleArray([...romaKelimeleri]);
+            const correctChoice = { kelime: mevcutKelime.kelime, anlam: mevcutKelime.anlam };
+            shuffledChoices.splice(Math.floor(Math.random() * 4), 0, correctChoice);
 
-    displayedChoices.forEach(choice => {
-        const button = document.createElement("button");
-        button.textContent = choice.anlam;
-        button.onclick = () => checkAnswer(choice.anlam);
-        choicesContainer.appendChild(button);
-    });
-}
+            const displayedChoices = shuffledChoices.slice(0, 4);
+
+            displayedChoices.forEach(choice => {
+                const button = document.createElement("button");
+                button.textContent = choice.anlam;
+                button.onclick = () => checkAnswer(choice.anlam);
+                choicesContainer.appendChild(button);
+            });
+        }
 
         function checkAnswer(selectedAnlam) {
             const correctAnlam = mevcutKelime.anlam;
@@ -210,7 +210,6 @@ document.getElementById("contactButton").addEventListener("click", function() {
             }
             return array;
         }
-
         const romaKelimeleri = [
             { kelime: "Amor", anlam: "Aşk" },
             { kelime: "Roma", anlam: "Roma" },
@@ -1937,7 +1936,7 @@ document.getElementById("contactButton").addEventListener("click", function() {
     </script>
     <script>
         document.getElementById("contactButton").addEventListener("click", function() {
-            window.location.href = "mailto:example@example.com?subject=İletişim Talebi&body=Merhaba, sizinle iletişime geçmek istiyorum.";
+        window.location.href = "mailto:example@example.com?subject=İletişim Talebi&body=Merhaba, sizinle iletişime geçmek istiyorum.";
         });
     </script>
 <script>
