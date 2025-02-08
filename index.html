@@ -1,4 +1,6 @@
 
+
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -12,14 +14,14 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #000; /* Changed to black */
+            background-color: #000;
             margin: 0;
             flex-direction: column;
         }
         .timer {
             font-size: 1.5em;
             margin-top: 10px;
-            color: blue; /* Changed to blue */
+            color: blue;
         }
         .flashcard {
             background-color: #fff;
@@ -91,34 +93,13 @@
         .statistics p {
             margin: 5px 0;
         }
-        .choices {
-            margin-top: 20px;
-        }
-        .choices button {
-            display: block;
-            width: 100%;
-            margin-bottom: 10px;
-        }
-        #contactButton {
-            padding: 10px 20px;
-            background-color: #28a745;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        #contactButton:hover {
-            background-color: #218838;
-        }
     </style>
 </head>
 <body>
     <div class="timer" id="genelSure">120</div>
     <div class="flashcard">
         <h2 id="kelime">Kelime</h2>
-        <div class="choices" id="choices"></div>
-        <input type="text" id="tahmin" placeholder="Kelimenin anlamını yazın" style="display: none;">
+        <input type="text" id="tahmin" placeholder="Kelimenin anlamını yazın">
         <select id="zorlukSeviyesi">
             <option value="kolay">Kolay</option>
             <option value="orta">Orta</option>
@@ -126,8 +107,6 @@
         </select>
         <button onclick="speakWord()">Telaffuz Et</button>
         <button onclick="tahminEt()">Tahmin Et</button>
-        <button onclick="printWords()">Kelimeleri Yazdır</button>
-        <button id="contactButton">İletişime Geçin</button>
         <div class="result" id="sonuc"></div>
         <div class="timer" id="sure">10</div>
         <div class="score">
@@ -151,45 +130,33 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.2.0/dist/confetti.browser.min.js"></script>
     <script>
         function speakWord() {
             const kelime = document.getElementById("kelime").textContent;
             const utterance = new SpeechSynthesisUtterance(kelime);
-            utterance.lang = 'tr-TR'; // Türkçe telaffuz
+            utterance.lang = 'tr-TR';
             speechSynthesis.speak(utterance);
         }
 
-        document.getElementById("contactButton").addEventListener("click", function() {
-            window.location.href = "mailto:example@example.com?subject=İletişim Talebi&body=Merhaba, sizinle iletişime geçmek istiyorum.";
-        });
+        function tahminEt() {
+            if (!testAktif) return;
+            const tahmin = document.getElementById("tahmin").value.trim();
+            const ses = document.getElementById("ses");
+            ses.play();
+            const yanıtSüresi = (document.getElementById("sure").innerText - sure);
+            toplamYanıtSüresi += yanıtSüresi;
+            toplamYanıtSayısı++;
 
-        function showChoices() {
-            const choicesContainer = document.getElementById("choices");
-            choicesContainer.innerHTML = '';
-            const shuffledChoices = shuffleArray([...romaKelimeleri]);
-            const correctChoice = { kelime: mevcutKelime.kelime, anlam: mevcutKelime.anlam };
-            shuffledChoices.splice(Math.floor(Math.random() * 4), 0, correctChoice);
-
-            const displayedChoices = shuffledChoices.slice(0, 4);
-
-            displayedChoices.forEach(choice => {
-                const button = document.createElement("button");
-                button.textContent = choice.anlam;
-                button.onclick = () => checkAnswer(choice.anlam);
-                choicesContainer.appendChild(button);
-            });
-        }
-
-        function checkAnswer(selectedAnlam) {
-            const correctAnlam = mevcutKelime.anlam;
-            if (selectedAnlam === correctAnlam) {
+            if (tahmin.toLowerCase() === mevcutKelime.anlam.toLowerCase()) {
                 document.getElementById("sonuc").textContent = "Doğru! 🎉";
                 dogruSayisi++;
                 puan += 10;
                 document.getElementById("dogruSayisi").textContent = dogruSayisi;
                 document.getElementById("puan").textContent = puan;
+                celebrate();  // Konfeti fonksiyonunu çağırın
             } else {
-                document.getElementById("sonuc").textContent = `Yanlış! Doğru cevap: ${correctAnlam}`;
+                document.getElementById("sonuc").textContent = `Yanlış! Doğru cevap: ${mevcutKelime.anlam}`;
                 yanlisSayisi++;
                 puan -= 5;
                 yanlisKelimeler.push(mevcutKelime.kelime);
@@ -203,13 +170,109 @@
             setTimeout(rastgeleKelimeSec, 2000);
         }
 
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
+        function celebrate() {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
         }
+
+        function zamanlayiciFonksiyonu() {
+            if (!testAktif) return;
+            sure--;
+            document.getElementById("sure").textContent = sure;
+            if (sure === 0) {
+                clearInterval(zamanlayici);
+                document.getElementById("sonuc").textContent = `Süre doldu! Doğru cevap: ${mevcutKelime.anlam}`;
+                yanlisSayisi++;
+                document.getElementById("yanlisSayisi").textContent = yanlisSayisi;
+                kelimeIndex++;
+                updateProgressBar();
+                updateStatistics();
+                setTimeout(rastgeleKelimeSec, 2000);
+            }
+        }
+
+        function rastgeleKelimeSec() {
+            const rastgeleIndex = Math.floor(Math.random() * romaKelimeleri.length);
+            mevcutKelime = romaKelimeleri[rastgeleIndex];
+            document.getElementById("kelime").textContent = mevcutKelime.kelime;
+            document.getElementById("sonuc").textContent = "";
+            document.getElementById("tahmin").value = "";
+            const zorluk = document.getElementById("zorlukSeviyesi").value;
+            if (zorluk === "kolay") {
+                sure = 15;
+            } else if (zorluk === "orta") {
+                sure = 10;
+            } else if (zorluk === "zor") {
+                sure = 5;
+            }
+            document.getElementById("sure").textContent = sure;
+            clearInterval(zamanlayici);
+            zamanlayici = setInterval(zamanlayiciFonksiyonu, 1000);
+        }
+
+        function genelZamanlayici() {
+            if (!testAktif) return;
+            toplamSure--;
+            document.getElementById("genelSure").textContent = toplamSure;
+            if (toplamSure === 0) {
+                clearInterval(genelZamanlayici);
+                stopTest();
+            }
+        }
+
+        function startTest() {
+            testAktif = true;
+            kelimeIndex = 0;
+            updateProgressBar();
+            rastgeleKelimeSec();
+            setInterval(genelZamanlayici, 1000);
+        }
+
+        function stopTest() {
+            testAktif = false;
+            clearInterval(zamanlayici);
+            clearInterval(genelZamanlayici);
+            alert("Test sona erdi.");
+            document.getElementById("kelime").textContent = "Test Sona Erdi";
+            document.getElementById("tahmin").disabled = true;
+            document.getElementById("zorlukSeviyesi").disabled = true;
+            document.getElementById("sure").textContent = "0";
+            document.getElementById("sonuc").textContent = "";
+            document.getElementById("dogruSayisi").textContent = dogruSayisi;
+            document.getElementById("yanlisSayisi").textContent = yanlisSayisi;
+            const yanlisKelimeListesi = document.getElementById("yanlisKelimeListesi");
+            yanlisKelimeler.forEach(kelime => {
+                const li = document.createElement("li");
+                li.textContent = kelime;
+                yanlisKelimeListesi.appendChild(li);
+            });
+
+            if (dogruSayisi > 50) {
+                document.getElementById("sonuc").textContent = "Uzman!";
+            } else if (dogruSayisi < 30 && dogruSayisi >= 20) {
+                document.getElementById("sonuc").textContent = "İyisin!";
+            } else if (dogruSayisi < 20) {
+                document.getElementById("sonuc").textContent = "Daha çalışmalısın!";
+            }
+        }
+
+        function updateProgressBar() {
+            const progressBar = document.getElementById("progressBar");
+            const progress = (kelimeIndex / toplamKelime) * 100;
+            progressBar.style.width = progress + '%';
+            progressBar.textContent = Math.round(progress) + '%';
+        }
+
+        function updateStatistics() {
+            const accuracyRate = (dogruSayisi / (dogruSayisi + yanlisSayisi)) * 100;
+            const averageResponseTime = toplamYanıtSüresi / toplamYanıtSayısı;
+            document.getElementById("accuracyRate").textContent = accuracyRate.toFixed(2) + '%';
+            document.getElementById("averageResponseTime").textContent = averageResponseTime.toFixed(2) + ' sn';
+        }
+
         const romaKelimeleri = [
             { kelime: "Amor", anlam: "Aşk" },
             { kelime: "Roma", anlam: "Roma" },
@@ -260,7 +323,7 @@
             { kelime: "Forum", anlam: "Meydan" },
             { kelime: "Theatrum", anlam: "Tiyatro" },
             { kelime: "Circus", anlam: "Sirk" },
-            { "kelime": "Amphitheatrum", "anlam": "Amfitiyatro" },
+{ "kelime": "Amphitheatrum", "anlam": "Amfitiyatro" },
 { "kelime": "Aquaeductus", "anlam": "Su kemeri" },
 { "kelime": "Basilica", "anlam": "Bazilika" },
 { "kelime": "Bibliotheca", "anlam": "Kütüphane" },
@@ -1790,7 +1853,7 @@
 { "kelime": "Noster", "anlam": "Bizim" },
 { "kelime": "Vester", "anlam": "Sizin" },
 { "kelime": "Suum", "anlam": "Onların (kendi için)" }
-  ];
+        ];
 
         let mevcutKelime;
         let puan = 0;
@@ -1806,145 +1869,7 @@
         let toplamYanıtSüresi = 0;
         let toplamYanıtSayısı = 0;
 
-        function rastgeleKelimeSec() {
-            const rastgeleIndex = Math.floor(Math.random() * romaKelimeleri.length);
-            mevcutKelime = romaKelimeleri[rastgeleIndex];
-            document.getElementById("kelime").textContent = mevcutKelime.kelime;
-            document.getElementById("sonuc").textContent = "";
-            document.getElementById("tahmin").value = "";
-            showChoices();
-            const zorluk = document.getElementById("zorlukSeviyesi").value;
-            if (zorluk === "kolay") {
-                sure = 15;
-            } else if (zorluk === "orta") {
-                sure = 10;
-            } else if (zorluk === "zor") {
-                sure = 5;
-            }
-            document.getElementById("sure").textContent = sure;
-            clearInterval(zamanlayici);
-            zamanlayici = setInterval(zamanlayiciFonksiyonu, 1000);
-        }
-
-        function zamanlayiciFonksiyonu() {
-            if (!testAktif) return;
-            sure--;
-            document.getElementById("sure").textContent = sure;
-            if (sure === 0) {
-                clearInterval(zamanlayici);
-                document.getElementById("sonuc").textContent = `Süre doldu! Doğru cevap: ${mevcutKelime.anlam}`;
-                yanlisSayisi++;
-                document.getElementById("yanlisSayisi").textContent = yanlisSayisi;
-                kelimeIndex++;
-                updateProgressBar();
-                updateStatistics();
-                setTimeout(rastgeleKelimeSec, 2000);
-            }
-        }
-
-        function tahminEt() {
-            if (!testAktif) return;
-            const tahmin = document.getElementById("tahmin").value.trim();
-            const ses = document.getElementById("ses");
-            ses.play();
-            const yanıtSüresi = (document.getElementById("sure").innerText - sure);
-            toplamYanıtSüresi += yanıtSüresi;
-            toplamYanıtSayısı++;
-
-            if (tahmin.toLowerCase() === mevcutKelime.anlam.toLowerCase()) {
-                document.getElementById("sonuc").textContent = "Doğru! 🎉";
-                dogruSayisi++;
-                puan += 10;
-                document.getElementById("dogruSayisi").textContent = dogruSayisi;
-                document.getElementById("puan").textContent = puan;
-            } else {
-                document.getElementById("sonuc").textContent = `Yanlış! Doğru cevap: ${mevcutKelime.anlam}`;
-                yanlisSayisi++;
-                puan -= 5;
-                yanlisKelimeler.push(mevcutKelime.kelime);
-                document.getElementById("yanlisSayisi").textContent = yanlisSayisi;
-                document.getElementById("puan").textContent = puan;
-            }
-            clearInterval(zamanlayici);
-            kelimeIndex++;
-            updateProgressBar();
-            updateStatistics();
-            setTimeout(rastgeleKelimeSec, 2000);
-        }
-
-        function genelZamanlayici() {
-            if (!testAktif) return;
-            toplamSure--;
-            document.getElementById("genelSure").textContent = toplamSure;
-            if (toplamSure === 0) {
-                clearInterval(genelZamanlayici);
-                stopTest();
-            }
-        }
-
-        function startTest() {
-            testAktif = true;
-            kelimeIndex = 0;
-            updateProgressBar();
-            rastgeleKelimeSec();
-            setInterval(genelZamanlayici, 1000);
-        }
-
-        function stopTest() {
-            testAktif = false;
-            clearInterval(zamanlayici);
-            clearInterval(genelZamanlayici);
-            alert("Test sona erdi.");
-            document.getElementById("kelime").textContent = "Test Sona Erdi";
-            document.getElementById("tahmin").disabled = true;
-            document.getElementById("zorlukSeviyesi").disabled = true;
-            document.getElementById("sure").textContent = "0";
-            document.getElementById("sonuc").textContent = "";
-            document.getElementById("dogruSayisi").textContent = dogruSayisi;
-            document.getElementById("yanlisSayisi").textContent = yanlisSayisi;
-            const yanlisKelimeListesi = document.getElementById("yanlisKelimeListesi");
-            yanlisKelimeler.forEach(kelime => {
-                const li = document.createElement("li");
-                li.textContent = kelime;
-                yanlisKelimeListesi.appendChild(li);
-            });
-
-            if (dogruSayisi > 50) {
-                document.getElementById("sonuc").textContent = "Uzman!";
-            } else if (dogruSayisi < 30 && dogruSayisi >= 20) {
-                document.getElementById("sonuc").textContent = "İyisin!";
-            } else if (dogruSayisi < 20) {
-                document.getElementById("sonuc").textContent = "Daha çalışmalısın!";
-            }
-        }
-
-        function updateProgressBar() {
-            const progressBar = document.getElementById("progressBar");
-            const progress = (kelimeIndex / toplamKelime) * 100;
-            progressBar.style.width = progress + '%';
-            progressBar.textContent = Math.round(progress) + '%';
-        }
-
-        function updateStatistics() {
-            const accuracyRate = (dogruSayisi / (dogruSayisi + yanlisSayisi)) * 100;
-            const averageResponseTime = toplamYanıtSüresi / toplamYanıtSayısı;
-            document.getElementById("accuracyRate").textContent = accuracyRate.toFixed(2) + '%';
-            document.getElementById("averageResponseTime").textContent = averageResponseTime.toFixed(2) + ' sn';
-        }
-
         startTest();
     </script>
-    <script>
-        document.getElementById("contactButton").addEventListener("click", function() {
-        window.location.href = "mailto:example@example.com?subject=İletişim Talebi&body=Merhaba, sizinle iletişime geçmek istiyorum.";
-        });
-    </script>
-<script>
-    function printWords() {
-        const wordList = romaKelimeleri.map(item => item.kelime).join(', ');
-        console.log(`Tüm Kelimeler: ${wordList}`);
-        alert(`Tüm Kelimeler: ${wordList}`);
-    }
-</script>
 </body>
 </html>
