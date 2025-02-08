@@ -100,6 +100,19 @@
             width: 100%;
             margin-bottom: 10px;
         }
+         }
+        #contactButton {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        #contactButton:hover {
+            background-color: #218838;
+        }
     </style>
 </head>
 <body>
@@ -116,6 +129,7 @@
         <button onclick="speakWord()">Telaffuz Et</button>
         <button onclick="tahminEt()">Tahmin Et</button>
 <button onclick="printWords()">Kelimeleri Yazdır</button>
+        <button id="contactButton">İletişime Geçin</button>
         <div class="result" id="sonuc"></div>
         <div class="timer" id="sure">10</div>
         <div class="score">
@@ -140,13 +154,15 @@
     </div>
 
     <script>
+        
         function speakWord() {
             const kelime = document.getElementById("kelime").textContent;
             const utterance = new SpeechSynthesisUtterance(kelime);
             utterance.lang = 'tr-TR'; // Türkçe telaffuz
             speechSynthesis.speak(utterance);
         }
-
+document.getElementById("contactButton").addEventListener("click", function() {
+            window.location.href = "mailto:example@example.com?subject=İletişim Talebi&body=Merhaba, sizinle iletişime geçmek istiyorum.";
        function showChoices() {
     const choicesContainer = document.getElementById("choices");
     choicesContainer.innerHTML = '';
